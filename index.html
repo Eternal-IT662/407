@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>โปรแกรมรายรับ-รายจ่าย + ภาษี</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: white; text-align: center; }
+    table { margin: 20px auto; border-collapse: collapse; }
+    th, td { border: 1px solid gray; padding: 5px 10px; text-align: center; }
+    th { background: lightgray; }
+    input { width: 100px; text-align: center; }
+    button { margin: 5px; padding: 8px 12px; border-radius: 6px; border: 1px solid gray; cursor: pointer; }
+    #balance { color: blue; font-weight: bold; }
+    #tax { color: red; font-weight: bold; }
+  </style>
+</head>
+<body>
+
+  <h2>โปรแกรมรายรับ-รายจ่าย + ภาษี</h2>
+
+  <table id="expenseTable">
+    <tr>
+      <th>วันที่</th>
+      <th>รายการ</th>
+      <th>รายรับ</th>
+      <th>รายจ่าย</th>
+    </tr>
+  </table>
+
+  <div>
+    <button onclick="addRow()">+ ตาราง</button>
+    <button onclick="deleteRow()">- ตาราง</button>
+  </div>
+
+  <div>
+    <button onclick="calculateBalance()">คำนวณยอดคงเหลือ</button>
+    <span id="balance"></span>
+  </div>
+
+  <div style="margin-top:20px;">
+    <label>เงินเดือน: <input type="number" id="salary"></label>
+    <button onclick="calculateTax()">คำนวณภาษี (ก้าวหน้า)</button>
+    <span id="tax"></span>
+  </div>
+
+  <script>
+    const table = document.getElementById("expenseTable");
+
+    function addRow() {
+      const row = table.insertRow();
+      for (let i = 0; i < 4; i++) {
+        const cell = row.insertCell(i);
+        cell.innerHTML = `<input type="text">`;
+      }
+    }
+
+    function deleteRow() {
+      if (table.rows.length > 1) {
+        table.deleteRow(table.rows.length - 1);
+      }
+    }
+
+    function calculateBalance() {
+      let balance = 0;
+      for (let r = 1; r < table.rows.length; r++) {
+        const income = parseFloat(table.rows[r].cells[2].children[0].value) || 0;
+        const expense = parseFloat(table.rows[r].cells[3].children[0].value) || 0;
+        balance += income - expense;
+      }
+      document.getElementById("balance").innerText = balance.toLocaleString();
+    }
+
+    function calculateTax() {
+      const salary = parseFloat(document.getElementById("salary").value);
+      if (isNaN(salary)) {
+        alert("กรุณาใส่เงินเดือนเป็นตัวเลข");
+        return;
+      }
+
+      const annual_income = salary * 12;
+      const brackets = [
+        [150000, 0.00],
+        [300000, 0.05],
+        [500000, 0.10],
+        [750000, 0.15],
+        [1000000, 0.20],
+        [2000000, 0.25],
+        [5000000, 0.30],
+        [Infinity, 0.35]
+      ];
+
+      let tax = 0;
+      let prev_limit = 0;
+      for (let [limit, rate] of brackets) {
+        if (annual_income > limit) {
+          tax += (limit - prev_limit) * rate;
+          prev_limit = limit;
+        } else {
+          tax += (annual_income - prev_limit) * rate;
+          break;
+        }
+      }
+
+      document.getElementById("tax").innerText = tax.toLocaleString() + " บาท/ปี";
+    }
+  </script>
+
+</body>
+</html>
